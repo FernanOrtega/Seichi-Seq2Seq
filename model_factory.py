@@ -23,7 +23,7 @@ def fit_model(model_option, x_train, y_train, w2v_model):
     early_stop_callback = EarlyStopping(monitor='loss', min_delta=0.001, patience=10, verbose=1, mode='auto')
 
     start = time.time()
-    model.fit(x_train, y_train, batch_size=32, epochs=1, verbose=2, callbacks=[early_stop_callback])
+    model.fit(x_train, y_train, batch_size=32, epochs=150, verbose=2, callbacks=[early_stop_callback])
     end = time.time()
     print('Fit done! {}'.format((end - start)))
 
@@ -52,22 +52,22 @@ class ModelBase(object):
         raise Exception('Not implemented!')
 
 
-class EncDecGRUSoftmax(ModelBase):
+class EncGRUDecGRUSoftmax(ModelBase):
     def __init__(self, wv, maxlen=100):
         super().__init__(wv, maxlen)
         embedding_layer = self.wv.model.wv.get_embedding_layer()
 
-        self.model = Sequential(name='EncDecGRUSoftmax')
+        self.model = Sequential(name='EncGRUDecGRUSoftmax')
         self.model.add(Masking(mask_value=-1, input_shape=(maxlen,)))
 
         # Creating encoder network
         self.model.add(embedding_layer)
-        self.model.add(GRU(300))
+        self.model.add(GRU(maxlen))
         self.model.add(RepeatVector(maxlen))
 
         # Creating decoder network
         for _ in range(4):
-            self.model.add(GRU(300, return_sequences=True))
+            self.model.add(GRU(maxlen, return_sequences=True))
         self.model.add(TimeDistributed(Dense(4, activation='softmax')))
 
         self.compile_model()
@@ -82,22 +82,22 @@ class EncDecGRUSoftmax(ModelBase):
         return self.model.predict(x)
 
 
-class EncDecGRUSigmoid(ModelBase):
+class EncGRUDecGRUSigmoid(ModelBase):
     def __init__(self, wv, maxlen=100):
         super().__init__(wv, maxlen)
         embedding_layer = self.wv.model.wv.get_embedding_layer()
 
-        self.model = Sequential(name='EncDecBiGRUSigmoid')
+        self.model = Sequential(name='EncGRUDecGRUSigmoid')
         self.model.add(Masking(mask_value=-1, input_shape=(maxlen,)))
 
         # Creating encoder network
         self.model.add(embedding_layer)
-        self.model.add(GRU(300))
+        self.model.add(GRU(maxlen))
         self.model.add(RepeatVector(maxlen))
 
         # Creating decoder network
         for _ in range(4):
-            self.model.add(GRU(300, return_sequences=True))
+            self.model.add(GRU(maxlen, return_sequences=True))
         self.model.add(TimeDistributed(Dense(4, activation='sigmoid')))
 
         self.compile_model()
@@ -112,22 +112,22 @@ class EncDecGRUSigmoid(ModelBase):
         return self.model.predict(x)
 
 
-class EncDecBiGRUSoftmax(ModelBase):
+class EncBiGRUDecGRUSoftmax(ModelBase):
     def __init__(self, wv, maxlen=100):
         super().__init__(wv, maxlen)
         embedding_layer = self.wv.model.wv.get_embedding_layer()
 
-        self.model = Sequential(name='EncDecBiGRUSoftmax')
+        self.model = Sequential(name='EncBiGRUDecGRUSoftmax')
         self.model.add(Masking(mask_value=-1, input_shape=(maxlen,)))
 
         # Creating encoder network
         self.model.add(embedding_layer)
-        self.model.add(Bidirectional(GRU(300)))
+        self.model.add(Bidirectional(GRU(maxlen)))
         self.model.add(RepeatVector(maxlen))
 
         # Creating decoder network
         for _ in range(4):
-            self.model.add(GRU(300, return_sequences=True))
+            self.model.add(GRU(maxlen, return_sequences=True))
         self.model.add(TimeDistributed(Dense(4, activation='softmax')))
 
         self.compile_model()
@@ -142,22 +142,22 @@ class EncDecBiGRUSoftmax(ModelBase):
         return self.model.predict(x)
 
 
-class EncDecBiGRUSigmoid(ModelBase):
+class EncBiDecGRUSigmoid(ModelBase):
     def __init__(self, wv, maxlen=100):
         super().__init__(wv, maxlen)
         embedding_layer = self.wv.model.wv.get_embedding_layer()
 
-        self.model = Sequential(name='EncDecBiGRUSigmoid')
+        self.model = Sequential(name='EncBiDecGRUSigmoid')
         self.model.add(Masking(mask_value=-1, input_shape=(maxlen,)))
 
         # Creating encoder network
         self.model.add(embedding_layer)
-        self.model.add(Bidirectional(GRU(300)))
+        self.model.add(Bidirectional(GRU(maxlen)))
         self.model.add(RepeatVector(maxlen))
 
         # Creating decoder network
         for _ in range(4):
-            self.model.add(GRU(300, return_sequences=True))
+            self.model.add(GRU(maxlen, return_sequences=True))
         self.model.add(TimeDistributed(Dense(4, activation='sigmoid')))
 
         self.compile_model()
@@ -172,22 +172,22 @@ class EncDecBiGRUSigmoid(ModelBase):
         return self.model.predict(x)
 
 
-class EncDecBiBiGRUSoftmax(ModelBase):
+class EncGRUDecBiGRUSoftmax(ModelBase):
     def __init__(self, wv, maxlen=100):
         super().__init__(wv, maxlen)
         embedding_layer = self.wv.model.wv.get_embedding_layer()
 
-        self.model = Sequential(name='EncDecBiBiGRUSoftmax')
+        self.model = Sequential(name='EncGRUDecBiGRUSoftmax')
         self.model.add(Masking(mask_value=-1, input_shape=(maxlen,)))
 
         # Creating encoder network
         self.model.add(embedding_layer)
-        self.model.add(Bidirectional(GRU(300)))
+        self.model.add(GRU(maxlen))
         self.model.add(RepeatVector(maxlen))
 
         # Creating decoder network
         for _ in range(4):
-            self.model.add(Bidirectional(GRU(300, return_sequences=True)))
+            self.model.add(Bidirectional(GRU(maxlen, return_sequences=True)))
         self.model.add(TimeDistributed(Dense(4, activation='softmax')))
 
         self.compile_model()
@@ -202,22 +202,82 @@ class EncDecBiBiGRUSoftmax(ModelBase):
         return self.model.predict(x)
 
 
-class EncDecBiBiGRUSigmoid(ModelBase):
+class EncGRUDecBiGRUSigmoid(ModelBase):
     def __init__(self, wv, maxlen=100):
         super().__init__(wv, maxlen)
         embedding_layer = self.wv.model.wv.get_embedding_layer()
 
-        self.model = Sequential(name='EncDecBiBiGRUSigmoid')
+        self.model = Sequential(name='EncGRUDecBiGRUSigmoid')
         self.model.add(Masking(mask_value=-1, input_shape=(maxlen,)))
 
         # Creating encoder network
         self.model.add(embedding_layer)
-        self.model.add(Bidirectional(GRU(300)))
+        self.model.add(Bidirectional(GRU(maxlen)))
         self.model.add(RepeatVector(maxlen))
 
         # Creating decoder network
         for _ in range(4):
-            self.model.add(Bidirectional(GRU(300, return_sequences=True)))
+            self.model.add(Bidirectional(GRU(maxlen, return_sequences=True)))
+        self.model.add(TimeDistributed(Dense(4, activation='sigmoid')))
+
+        self.compile_model()
+
+    def compile_model(self):
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
+
+    def fit(self, x, y, batch_size, epochs, verbose, callbacks):
+        self.model.fit(x, y, batch_size=batch_size, epochs=epochs, verbose=verbose, callbacks=callbacks)
+
+    def predict(self, x):
+        return self.model.predict(x)
+
+
+class EncBiGRUDecBiGRUSoftmax(ModelBase):
+    def __init__(self, wv, maxlen=100):
+        super().__init__(wv, maxlen)
+        embedding_layer = self.wv.model.wv.get_embedding_layer()
+
+        self.model = Sequential(name='EncBiGRUDecBiGRUSoftmax')
+        self.model.add(Masking(mask_value=-1, input_shape=(maxlen,)))
+
+        # Creating encoder network
+        self.model.add(embedding_layer)
+        self.model.add(Bidirectional(GRU(maxlen)))
+        self.model.add(RepeatVector(maxlen))
+
+        # Creating decoder network
+        for _ in range(4):
+            self.model.add(Bidirectional(GRU(maxlen, return_sequences=True)))
+        self.model.add(TimeDistributed(Dense(4, activation='softmax')))
+
+        self.compile_model()
+
+    def compile_model(self):
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
+
+    def fit(self, x, y, batch_size, epochs, verbose, callbacks):
+        self.model.fit(x, y, batch_size=batch_size, epochs=epochs, verbose=verbose, callbacks=callbacks)
+
+    def predict(self, x):
+        return self.model.predict(x)
+
+
+class EncBiGRUDecBiGRUSigmoid(ModelBase):
+    def __init__(self, wv, maxlen=100):
+        super().__init__(wv, maxlen)
+        embedding_layer = self.wv.model.wv.get_embedding_layer()
+
+        self.model = Sequential(name='EncBiGRUDecBiGRUSigmoid')
+        self.model.add(Masking(mask_value=-1, input_shape=(maxlen,)))
+
+        # Creating encoder network
+        self.model.add(embedding_layer)
+        self.model.add(Bidirectional(GRU(maxlen)))
+        self.model.add(RepeatVector(maxlen))
+
+        # Creating decoder network
+        for _ in range(4):
+            self.model.add(Bidirectional(GRU(maxlen, return_sequences=True)))
         self.model.add(TimeDistributed(Dense(4, activation='sigmoid')))
 
         self.compile_model()

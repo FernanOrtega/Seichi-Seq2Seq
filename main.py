@@ -57,16 +57,21 @@ def main():
               ' <# folds> <model option> <output csv path>')
         exit()
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    data_set = [eval(file_line) for file_line in open(os.path.join(dir_path, args[0]), encoding='utf-8')]
+    # dir_path = os.path.dirname(os.path.realpath(__file__))
+    # dataset_path = os.path.join(dir_path, args[0])
+    dataset_path = args[0]
+    data_set = [eval(file_line) for file_line in open(dataset_path, encoding='utf-8')]
     lang = args[1]
     start = time.time()
-    w2v_model = WordEmbeddings(lang, os.path.join(dir_path, args[2]))
+    # w2v_path = os.path.join(dir_path, args[2])
+    w2v_path = args[2]
+    w2v_model = WordEmbeddings(lang, w2v_path)
     end = time.time()
     print('WV loaded', (end - start))
     n_splits = int(args[3])
     model_option = get_model(args[4])
-    output_csv_path = os.path.join(dir_path, args[5])
+    # output_csv_path = os.path.join(dir_path, args[5])
+    output_csv_path = args[5]
 
     execute_experiments(data_set, w2v_model, n_splits, model_option, output_csv_path)
 

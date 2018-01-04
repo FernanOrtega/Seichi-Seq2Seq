@@ -1,7 +1,7 @@
 import warnings
 
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
-import gensim, os, time
+import gensim, os
 from word_preprocessing import Preprocessor
 
 
