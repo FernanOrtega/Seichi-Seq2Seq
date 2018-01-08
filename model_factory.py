@@ -142,12 +142,12 @@ class EncBiGRUDecGRUSoftmax(ModelBase):
         return self.model.predict(x)
 
 
-class EncBiDecGRUSigmoid(ModelBase):
+class EncBiGRUDecGRUSigmoid(ModelBase):
     def __init__(self, wv, maxlen=100):
         super().__init__(wv, maxlen)
         embedding_layer = self.wv.model.wv.get_embedding_layer()
 
-        self.model = Sequential(name='EncBiDecGRUSigmoid')
+        self.model = Sequential(name='EncBiGRUDecGRUSigmoid')
         self.model.add(Masking(mask_value=-1, input_shape=(maxlen,)))
 
         # Creating encoder network
